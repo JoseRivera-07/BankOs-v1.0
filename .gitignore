@@ -1,0 +1,40 @@
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Seguridad
+*.env
+.env.*
+secrets.json
+google-services.json
+GoogleService-Info.plist
+
+# Android
+**/android/local.properties
+**/android/.gradle
+**/android/key.properties
+
+# iOS
+**/ios/.generated/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+
+# Tests
+coverage/
