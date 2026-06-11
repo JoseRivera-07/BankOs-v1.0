@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bank_os/features/auth/presentation/screens/login_screen.dart';
+import 'package:bank_os/features/dashboard/presentation/screens/dashboard_screen.dart';
+
 
 
 abstract final class AppRoutes {
@@ -25,9 +27,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.dashboard,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Dashboard — coming soon')),
-      ),
+      builder: (context, state) => const DashboardScreen(),
     ),
     GoRoute(
       path: AppRoutes.history,
