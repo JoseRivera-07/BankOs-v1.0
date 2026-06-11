@@ -17,182 +17,313 @@ class HistoryScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.onSurface),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary),
           onPressed: () => context.go(AppRoutes.dashboard),
         ),
         title: Text(
           'Historial',
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: AppColors.onSurface,
+              ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.primary,
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      bottomNavigationBar: _BottomNav(currentIndex: 1),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Filtros ────────────────────────────
+            SizedBox(
+              height: 48,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _FilterChip(
+                    icon: Icons.calendar_month_outlined,
+                    label: 'Rango de fechas',
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    icon: Icons.filter_alt_outlined,
+                    label: 'Tipo',
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    icon: Icons.check_circle_outline_rounded,
+                    label: 'Estado',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            // ── Lista ──────────────────────────────
+            Expanded(
+              child: transactionsAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+                error: (e, _) => Center(
+                  child: Text(
+                    'Error: $e',
+                    style: const TextStyle(color: AppColors.error),
+                  ),
+                ),
+                data: (transactions) {
+                  final grouped = _groupByDate(transactions);
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: grouped.length,
+                    itemBuilder: (context, index) {
+                      final entry = grouped.entries.elementAt(index);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              entry.key,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                    letterSpacing: 0.08,
+                                  ),
+                            ),
+                          ),
+                          Card(
+                            child: Column(
+                              children: entry.value
+                                  .asMap()
+                                  .entries
+                                  .map((e) {
+                                final isLast =
+                                    e.key == entry.value.length - 1;
+                                return Column(
+                                  children: [
+                                    _TransactionTile(
+                                        transaction: e.value),
+                                    if (!isLast)
+                                      const Divider(
+                                        height: 1,
+                                        indent: 16,
+                                        endIndent: 16,
+                                      ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
-      body: SafeArea(
-        child: transactionsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-          error: (e, _) => Center(
-            child: Text(
-              'Error cargando transacciones: $e',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-          data: (transactions) => transactions.isEmpty
-              ? Center(
-                  child: Text(
-                    'No hay transacciones',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: transactions.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final transaction = transactions[index];
-                    return _TransactionTile(transaction: transaction);
-                  },
+    );
+  }
+
+  Map<String, List<Transaction>> _groupByDate(List<Transaction> transactions) {
+    final Map<String, List<Transaction>> grouped = {};
+    final now = DateTime.now();
+
+    for (final t in transactions) {
+      final diff = now.difference(t.createdAt).inDays;
+      String key;
+      if (diff == 0) {
+        key = 'HOY';
+      } else if (diff == 1) {
+        key = 'AYER';
+      } else {
+        key = DateFormat('dd MMM, yyyy', 'es').format(t.createdAt).toUpperCase();
+      }
+      grouped.putIfAbsent(key, () => []).add(t);
+    }
+    return grouped;
+  }
+}
+
+// ── Filter Chip ───────────────────────────────
+class _FilterChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _FilterChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(9999),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.onSurface,
                 ),
-        ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 16,
+            color: AppColors.onSurfaceVariant,
+          ),
+        ],
       ),
     );
   }
 }
 
+// ── Transaction Tile ──────────────────────────
 class _TransactionTile extends StatelessWidget {
   final Transaction transaction;
 
   const _TransactionTile({required this.transaction});
-
-  IconData get _icon {
-    switch (transaction.type) {
-      case TransactionType.deposit:
-        return Icons.arrow_downward;
-      case TransactionType.withdrawal:
-        return Icons.arrow_upward;
-      case TransactionType.transfer:
-        return Icons.swap_horiz;
-    }
-  }
-
-  Color get _iconColor {
-    switch (transaction.type) {
-      case TransactionType.deposit:
-        return AppColors.primary;
-      case TransactionType.withdrawal:
-        return AppColors.error;
-      case TransactionType.transfer:
-        return AppColors.secondary;
-    }
-  }
-
-  String get _typeLabel {
-    switch (transaction.type) {
-      case TransactionType.deposit:
-        return 'Depósito';
-      case TransactionType.withdrawal:
-        return 'Retiro';
-      case TransactionType.transfer:
-        return 'Transferencia';
-    }
-  }
-
-  String get _statusLabel {
-    switch (transaction.status) {
-      case TransactionStatus.completed:
-        return 'Completada';
-      case TransactionStatus.pending:
-        return 'Pendiente';
-      case TransactionStatus.failed:
-        return 'Fallida';
-    }
-  }
-
-  Color get _statusColor {
-    switch (transaction.status) {
-      case TransactionStatus.completed:
-        return AppColors.primary;
-      case TransactionStatus.pending:
-        return AppColors.secondary;
-      case TransactionStatus.failed:
-        return AppColors.error;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final formatter = NumberFormat.currency(
       locale: transaction.currency == 'COP' ? 'es_CO' : 'en_US',
       symbol: transaction.currency == 'COP' ? '\$' : 'USD ',
-      decimalDigits: transaction.currency == 'COP' ? 0 : 2,
+      decimalDigits: 2,
     );
 
-    final dateFormatter = DateFormat('dd MMM yyyy, HH:mm', 'es');
+    final isCredit = transaction.type == TransactionType.deposit;
+    final amountColor =
+        isCredit ? AppColors.creditGreen : AppColors.debitRed;
+    final amountPrefix = isCredit ? '+' : '-';
 
-    return Card(
-      child: InkWell(
-        onTap: () => context.go('/transaction/${transaction.id}'),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // ── Icono ──────────────────────────────
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(_icon, color: _iconColor, size: 20),
+    IconData icon;
+    String category;
+    switch (transaction.type) {
+      case TransactionType.deposit:
+        icon = Icons.payment_rounded;
+        category = 'Ingresos';
+        break;
+      case TransactionType.withdrawal:
+        icon = Icons.shopping_cart_outlined;
+        category = 'Compras';
+        break;
+      case TransactionType.transfer:
+        icon = Icons.swap_horiz_rounded;
+        category = 'Transferencias';
+        break;
+    }
+
+    return InkWell(
+      onTap: () => context.go('/transaction/${transaction.id}'),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 16),
-              // ── Info ───────────────────────────────
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _typeLabel,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      dateFormatter.format(transaction.createdAt),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              // ── Monto y estado ─────────────────────
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              child: Icon(icon, color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    formatter.format(transaction.amount),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: _iconColor,
+                    transaction.description ?? 'Transacción',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
                         ),
                   ),
-                  const SizedBox(height: 2),
                   Text(
-                    _statusLabel,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: _statusColor,
+                    category,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurfaceVariant,
                         ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            Text(
+              '$amountPrefix${formatter.format(transaction.amount)}',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: amountColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Bottom Navigation ─────────────────────────
+class _BottomNav extends StatelessWidget {
+  final int currentIndex;
+
+  const _BottomNav({required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.outlineVariant),
+        ),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          if (index == 0) context.go(AppRoutes.dashboard);
+          if (index == 2) context.go(AppRoutes.deposit);
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_rounded),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            activeIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Movimientos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.swap_horiz_rounded),
+            label: 'Operar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Perfil',
+          ),
+        ],
       ),
     );
   }

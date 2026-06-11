@@ -1,18 +1,14 @@
 import 'package:go_router/go_router.dart';
-import 'package:bank_os/features/auth/presentation/screens/login_screen.dart';
-import 'package:bank_os/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:bank_os/features/transactions/presentation/screens/history_screen.dart';
-import 'package:bank_os/features/transactions/presentation/screens/transaction_detail_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/deposit_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/withdrawal_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/transfer_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/transaction_summary_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/pin_confirmation_screen.dart';
-import 'package:bank_os/features/operations/presentation/screens/operation_status_screen.dart';
-
-
-
-
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/transactions/presentation/screens/history_screen.dart';
+import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
+import '../../features/operations/presentation/screens/deposit_screen.dart';
+import '../../features/operations/presentation/screens/withdrawal_screen.dart';
+import '../../features/operations/presentation/screens/transfer_screen.dart';
+import '../../features/operations/presentation/screens/transaction_summary_screen.dart';
+import '../../features/operations/presentation/screens/pin_confirmation_screen.dart';
+import '../../features/operations/presentation/screens/operation_status_screen.dart';
 
 abstract final class AppRoutes {
   static const login = '/login';
@@ -45,7 +41,8 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.transactionDetail,
       builder: (context, state) => TransactionDetailScreen(
-        transactionId: state.pathParameters['id']!),
+        transactionId: state.pathParameters['id']!,
+      ),
     ),
     GoRoute(
       path: AppRoutes.deposit,
@@ -61,15 +58,21 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.transactionSummary,
-      builder: (context, state) => const TransactionSummaryScreen(data: {}),
+      builder: (context, state) => TransactionSummaryScreen(
+        data: state.extra as Map<String, dynamic>,
+      ),
     ),
     GoRoute(
       path: AppRoutes.pinConfirmation,
-      builder: (context, state) => PinConfirmationScreen(data: state.extra as Map<String, dynamic>),
+      builder: (context, state) => PinConfirmationScreen(
+        data: state.extra as Map<String, dynamic>,
+      ),
     ),
     GoRoute(
       path: AppRoutes.operationStatus,
-      builder: (context, state) => OperationStatusScreen(data: state.extra as Map<String, dynamic>),
+      builder: (context, state) => OperationStatusScreen(
+        data: state.extra as Map<String, dynamic>,
+      ),
     ),
   ],
 );

@@ -19,14 +19,14 @@ class AuthRepository {
     await Future.delayed(const Duration(seconds: 1));
 
     final mockUsers = {
-      'admin@bancolombia.com': {
-        'password': 'Admin123!',
+      'admin@123.com': {
+        'password': '123456',
         'userId': 'usr_001',
         'tenantId': 'ten_bancolombia',
         'role': 'admin',
       },
-      'cliente@bancolombia.com': {
-        'password': 'Cliente123!',
+      'cliente@123.com': {
+        'password': '123456',
         'userId': 'usr_002',
         'tenantId': 'ten_bancolombia',
         'role': 'client',
