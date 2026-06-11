@@ -1,7 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bank_os/features/auth/presentation/screens/login_screen.dart';
 import 'package:bank_os/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:bank_os/features/transactions/presentation/screens/history_screen.dart';
+import 'package:bank_os/features/transactions/presentation/screens/transaction_detail_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/deposit_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/withdrawal_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/transfer_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/transaction_summary_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/pin_confirmation_screen.dart';
+import 'package:bank_os/features/operations/presentation/screens/operation_status_screen.dart';
+
+
 
 
 
@@ -31,51 +40,36 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.history,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('History — coming soon')),
-      ),
+      builder: (context, state) => const HistoryScreen(),
     ),
     GoRoute(
       path: AppRoutes.transactionDetail,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Transaction Detail — coming soon')),
-      ),
+      builder: (context, state) => TransactionDetailScreen(
+        transactionId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: AppRoutes.deposit,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Deposit — coming soon')),
-      ),
+      builder: (context, state) => const DepositScreen(),
     ),
     GoRoute(
       path: AppRoutes.withdrawal,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Withdrawal — coming soon')),
-      ),
+      builder: (context, state) => const WithdrawalScreen(),
     ),
     GoRoute(
       path: AppRoutes.transfer,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Transfer — coming soon')),
-      ),
+      builder: (context, state) => const TransferScreen(),
     ),
     GoRoute(
       path: AppRoutes.transactionSummary,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Transaction Summary — coming soon')),
-      ),
+      builder: (context, state) => const TransactionSummaryScreen(data: {}),
     ),
     GoRoute(
       path: AppRoutes.pinConfirmation,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Pin Confirmation — coming soon')),
-      ),
+      builder: (context, state) => PinConfirmationScreen(data: state.extra as Map<String, dynamic>),
     ),
     GoRoute(
       path: AppRoutes.operationStatus,
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('Operation Status — coming soon')),
-      ),
+      builder: (context, state) => OperationStatusScreen(data: state.extra as Map<String, dynamic>),
     ),
   ],
 );
